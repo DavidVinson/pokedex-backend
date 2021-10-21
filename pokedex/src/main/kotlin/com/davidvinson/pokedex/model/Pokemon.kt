@@ -1,7 +1,7 @@
 package com.davidvinson.pokedex.model
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import javax.persistence.*
-
 
 @Entity
 @Table(name = "pokemon")
@@ -13,31 +13,115 @@ class PokemonEntity(
     val image: String,
 
     @ManyToMany
-    val types: List<PokemonTypeEntity>
+    val types: List<TypeEntity>,
+
+    val height: Double,
+    val weight: Double,
+
+    @ManyToMany
+    val abilities: List<AbilityEntity>,
+
+    @ManyToMany
+    val eggGroups: List<EggGroupEntity>,
+
+    @OneToOne
+    val stats: StatEntity
+
 )
 
 @Entity
 @Table(name = "type")
-class PokemonTypeEntity(
+class TypeEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int,
     val name: String
 )
 
+@Entity
+@Table(name = "ability")
+class AbilityEntity(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Int,
+    val name: String
+)
 
-// Response Model
+@Entity
+@Table(name = "eggGroup")
+class EggGroupEntity(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Int,
+    val name: String
+)
+
+@Entity
+@Table(name = "stat")
+class StatEntity(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Int,
+    val hp: Int,
+    val attack: Int,
+    val defence: Int,
+    val speed: Int,
+    val specialAttack: Int,
+    val specialDefence: Int
+)
+
+
+// Pokemon Response Model
 data class PokemonResponse(
     val id: Int,
     val name: String,
-    val types: List<String>
+    val types: List<String>,
+    val height: Double,
+    val weight: Double,
+    val abilities: List<String>,
+
+    @JsonProperty("egg_groups")
+    val eggGroups: List<String>,
+    val stats: Stat
     )
 
+// Stat Model
+class Stat(
+    val hp: Int,
+    val attack: Int,
+    val defence: Int,
+    val speed: Int,
+
+    @JsonProperty("special_attack")
+    val specialAttack: Int,
+
+    @JsonProperty("special_defence")
+    val specialDefence: Int
+)
+
+// PokemonEntity to Response Model
 fun PokemonEntity.toResponse(): PokemonResponse {
     return PokemonResponse(
-        id = this.id,
-        name = this.name,
-        types = this.types.map { type -> type.name }
+        id = id,
+        name = name,
+        types = types.map { type -> type.name },
+        height = height,
+        weight = weight,
+        abilities = abilities.map { ability -> ability.name},
+        eggGroups = eggGroups.map { egg -> egg.name },
+        stats = stats.toModel()
+    )
+}
+
+// StatEntity to Stat Model
+fun StatEntity.toModel(): Stat {
+    return Stat(
+        hp = hp,
+        attack = attack,
+        defence = defence,
+        speed = speed,
+        specialAttack = specialAttack,
+        specialDefence = specialDefence
     )
 }
 
