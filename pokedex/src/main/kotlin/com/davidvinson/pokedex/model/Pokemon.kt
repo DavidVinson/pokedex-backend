@@ -11,12 +11,13 @@ class PokemonEntity(
     val id: Int,
     val name: String,
     val image: String,
+    val height: Double,
+    val weight: Double,
+    val genus: String,
+    val description: String,
 
     @ManyToMany
     val types: List<TypeEntity>,
-
-    val height: Double,
-    val weight: Double,
 
     @ManyToMany
     val abilities: List<AbilityEntity>,
@@ -82,7 +83,9 @@ data class PokemonResponse(
 
     @JsonProperty("egg_groups")
     val eggGroups: List<String>,
-    val stats: Stat
+    val stats: Stat,
+    val genus: String,
+    val description: String
     )
 
 // Stat Model
@@ -109,7 +112,10 @@ fun PokemonEntity.toResponse(): PokemonResponse {
         weight = weight,
         abilities = abilities.map { ability -> ability.name},
         eggGroups = eggGroups.map { egg -> egg.name },
-        stats = stats.toModel()
+        stats = stats.toModel(),
+        genus = genus,
+        description = description
+
     )
 }
 
