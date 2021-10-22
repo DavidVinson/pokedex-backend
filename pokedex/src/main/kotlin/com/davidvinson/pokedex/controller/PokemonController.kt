@@ -1,11 +1,7 @@
 package com.davidvinson.pokedex.controller
 
-import com.davidvinson.pokedex.model.PokemonEntity
-import com.davidvinson.pokedex.model.PokemonResponse
-import com.davidvinson.pokedex.model.toResponse
+import com.davidvinson.pokedex.model.*
 import com.davidvinson.pokedex.service.PokemonService
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
@@ -14,8 +10,8 @@ import org.springframework.web.bind.annotation.RestController
 class PokemonController(val pokemonService: PokemonService) {
 
     @GetMapping("/api/pokemon")
-    fun getAllPokemon(): List<PokemonEntity> {
-        return pokemonService.getAllPokemon()
+    fun getAllPokemon(): List<PokemonListResponse> {
+        return pokemonService.getAllPokemon().map {pokemon -> pokemon.toListResponse()}
     }
 
     @GetMapping("/api/pokemon/{id}")

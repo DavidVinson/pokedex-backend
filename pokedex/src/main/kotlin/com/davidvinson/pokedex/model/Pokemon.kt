@@ -88,6 +88,13 @@ data class PokemonResponse(
     val description: String
     )
 
+// Pokemon List Response Model
+data class PokemonListResponse(
+    val id: Int,
+    val name: String,
+    val types: List<String>
+)
+
 // Stat Model
 class Stat(
     val hp: Int,
@@ -116,6 +123,15 @@ fun PokemonEntity.toResponse(): PokemonResponse {
         genus = genus,
         description = description
 
+    )
+}
+
+// PokemonEntity to List Response Model
+fun PokemonEntity.toListResponse(): PokemonListResponse {
+    return PokemonListResponse(
+        id = id,
+        name = name,
+        types = types.map { type -> type.name },
     )
 }
 
