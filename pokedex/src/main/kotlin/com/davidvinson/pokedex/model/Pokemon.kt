@@ -96,7 +96,7 @@ data class PokemonListResponse(
 )
 
 // Stat Model
-class Stat(
+data class Stat(
     val hp: Int,
     val attack: Int,
     val defence: Int,

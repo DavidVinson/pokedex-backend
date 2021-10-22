@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: "jdbc:postgresql://localhost:5432/pokemonBE"
+    username: "davidvinson"
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQL81Dialect
