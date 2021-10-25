@@ -12,4 +12,6 @@ class TrainerService(val trainerRepository: TrainerRepository) {
 
     fun getTrainerById(trainerId: Int): TrainerEntity = trainerRepository.findById(trainerId)
         .orElseThrow { TrainerNotFoundException(HttpStatus.NOT_FOUND, "No matching trainer was found")}
+
+//    fun createTrainer():
 }
