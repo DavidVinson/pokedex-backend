@@ -31,6 +31,8 @@ dependencies {
 	testImplementation("io.projectreactor:reactor-test")
 	implementation( "org.mapstruct:mapstruct:1.4.2.Final")
 	annotationProcessor( "org.mapstruct:mapstruct-processor:1.4.2.Final")
+	implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.1.0")
+
 }
 
 tasks.withType<KotlinCompile> {

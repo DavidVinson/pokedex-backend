@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class PokemonController(val pokemonService: PokemonService) {
+class PokemonController(val pokemonService: PokemonService, val pokemonSeedDataService: PokemonSeedDataService) {
 
     @GetMapping("/api/pokemon")
     fun getAllPokemon(): ResponseEntity<List<PokemonListResponse>> {
@@ -18,14 +18,13 @@ class PokemonController(val pokemonService: PokemonService) {
     @GetMapping("/api/pokemon/{id}")
     fun getPokemonById(@PathVariable("id") pokemonId: Int): ResponseEntity<PokemonResponse> {
         return ResponseEntity.ok(pokemonService.getPokemonById(pokemonId).toResponse())
-
     }
 
-//    @GetMapping("/api/pokemon/{id}")
-//    fun getPokemonById(@PathVariable("id") pokemonId: Int): PokemonResponse {
-//        return pokemonService.getPokemonById(pokemonId).toResponse()
-//
-//    }
+    @GetMapping("/api/pokemon/test")
+    fun seedDatabase() {
+        pokemonSeedDataService.databaseInitializer()
+        println("successful save")
+    }
 
 }
 

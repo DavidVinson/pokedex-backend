@@ -74,7 +74,7 @@ class StatEntity(
 
 // Pokemon Response Model
 data class PokemonResponse(
-    val id: Int,
+    val id: Int? = null,
     val name: String,
     val types: List<String>,
     val height: Double,
@@ -90,10 +90,11 @@ data class PokemonResponse(
 
 // Pokemon List Response Model
 data class PokemonListResponse(
-    val id: Int,
+    val id: Int? = null,
     val name: String,
     val types: List<String>
 )
+
 
 // Stat Model
 data class Stat(

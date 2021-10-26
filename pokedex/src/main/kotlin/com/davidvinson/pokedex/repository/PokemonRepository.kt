@@ -9,6 +9,8 @@ import org.springframework.stereotype.Repository
 @Repository
 interface PokemonRepository : JpaRepository<PokemonEntity, Int> {}
 
+
+
 ////Example
 //interface UserRepository : JpaRepository<User?, Long?> {
 //    fun findByLastname(lastname: String?): List<User?>?

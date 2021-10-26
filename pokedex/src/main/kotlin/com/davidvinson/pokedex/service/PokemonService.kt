@@ -5,7 +5,6 @@ import com.davidvinson.pokedex.repository.PokemonRepository
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 
-
 @Service
 class PokemonService(val pokemonRepository: PokemonRepository) {
 
@@ -13,6 +12,8 @@ class PokemonService(val pokemonRepository: PokemonRepository) {
 
     fun getPokemonById(pokemonId: Int): PokemonEntity = pokemonRepository.findById(pokemonId)
         .orElseThrow { PokemonNotFoundException(HttpStatus.NOT_FOUND, "No matching pokemon was found")}
+
+
 
 }
 
