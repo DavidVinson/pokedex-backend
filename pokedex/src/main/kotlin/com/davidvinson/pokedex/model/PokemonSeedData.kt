@@ -13,34 +13,44 @@ class PokemonSeedDataService(val pokemonDataRepository: PokemonDataRepository) {
 
     fun databaseInitializer() {
         csvReader().open(filePath) {
-            readAllWithHeaderAsSequence().forEach { item -> println(item["name"]) }
-        }
+            readAllWithHeaderAsSequence().forEach { row ->
+                //Do something
+                val id: String? = row["id"]
+                val name: String? = row["name"]
+                val height: String? = row["height"]
+                val weight: String? = row["weight"]
+                val genus: String? = row["genus"]
+                val description: String? = row["description"]
 
+                val pokemon: PokemonDataEntity = PokemonDataEntity(
+                    id = id?.toInt(),
+                    pokeName = name,
+                    height = height?.toDouble(),
+                    weight = weight?.toDouble(),
+                    genus = genus,
+                    description = description
+                )
+
+                saveToDB(pokemon)
+
+            }
+        }
     }
+    fun saveToDB(pokemon: PokemonDataEntity): PokemonDataEntity = pokemonDataRepository.save(pokemon)
+
 }
 
-data class SeedData(
-    val name: String?,
-//    val height: String,
-//    val weight: String,
-//    val genus: String,
-//    val description: String
-    )
-
-//fun saveToDB(data: String?): PokemonDataEntity {
-//
-//}
 
 @Entity
 @Table(name = "pokemonData")
 class PokemonDataEntity(
     @Id
-    val id: String?,
-    val pokeName: String,
-//    val height: String?,
-//    val weight: String?,
-//    val genus: String?,
-//    val description: String?
+    val id: Int?,
+    val pokeName: String?,
+    val height: Double?,
+    val weight: Double?,
+    val genus: String?,
+    val description: String?
 
 )
 

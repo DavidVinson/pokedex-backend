@@ -4,7 +4,7 @@ services:
     container_name: pokedex_db_local
     image: library/postgres
     ports:
-      - 5432:3306
+      - "5432:3306"
     environment:
       POSTGRES_DB: pokedex_db
       POSTGRES_USER: pokedex_user
