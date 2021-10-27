@@ -21,11 +21,11 @@ check:
 # dependencies:
 # 	./gradlew -q dependencies infrastructure:dependencies
 #
-# db/start:
-# 	docker-compose -f docker/docker-compose.yml up -d
-#
-# db/stop:
-# 	docker-compose -f docker/docker-compose.yml down -v
+db/start:
+	docker-compose -f docker/docker-compose.yml up -d
+
+db/stop:
+	docker-compose -f docker/docker-compose.yml down -v
 
 db/migrate:
 	./gradlew :update
