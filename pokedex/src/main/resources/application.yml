@@ -1,6 +1,13 @@
+#server:
+#  servlet:
+#    context-path: /api
+#  port: 9081
+
 spring:
   datasource:
     url: "jdbc:postgresql://localhost:5432/pokemonBE"
+#    url: "jdbc:postgresql://localhost:5432/pokedex_db"
+
     username: "davidvinson"
   jpa:
     hibernate:
