@@ -32,6 +32,8 @@ dependencies {
 	implementation( "org.mapstruct:mapstruct:1.4.2.Final")
 	annotationProcessor( "org.mapstruct:mapstruct-processor:1.4.2.Final")
 	implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.1.0")
+	implementation("org.springdoc:springdoc-openapi-ui:1.5.12")
+	implementation("org.springdoc:springdoc-openapi-kotlin:1.5.12")
 
 }
 

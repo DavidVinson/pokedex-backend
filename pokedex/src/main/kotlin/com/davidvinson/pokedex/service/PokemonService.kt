@@ -12,9 +12,6 @@ class PokemonService(val pokemonRepository: PokemonRepository) {
 
     fun getPokemonById(pokemonId: Int): PokemonEntity = pokemonRepository.findById(pokemonId)
         .orElseThrow { PokemonNotFoundException(HttpStatus.NOT_FOUND, "No matching pokemon was found")}
-
-
-
 }
 
 

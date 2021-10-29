@@ -7,16 +7,19 @@ import org.springframework.stereotype.Service
 import javax.persistence.*
 
 @Service
-class PokemonSeedDataService(val pokemonDataRepository: PokemonDataRepository, val pokemonDataTypeRepository: PokemonDataTypeRepository) {
+class PokemonSeedDataService(
+    val pokemonDataRepository: PokemonDataRepository,
+    val pokemonDataTypeRepository: PokemonDataTypeRepository
+    ) {
 
     private val filePath = "src/main/resources/rawData-copy2.csv"
 
     fun databaseInitializer() {
+
         val newTypesSet: MutableSet<String> = mutableSetOf()
 
         csvReader().open(filePath) {
             readAllWithHeaderAsSequence().forEach { row ->
-                //Do something
                 val id: String? = row["id"] // row.get("id")
                 val name: String? = row["name"]
                 val height: String? = row["height"]
@@ -31,29 +34,28 @@ class PokemonSeedDataService(val pokemonDataRepository: PokemonDataRepository, v
                     height = height?.toDouble(),
                     weight = weight?.toDouble(),
                     genus = genus,
-                    description = description
+                    description = description,
+                    types =
                 )
 
                 //clean types string by removing "[]" from the string
                 val newTypes: String = types!!.drop(1).dropLast(1)
                 //clean types by creating a list of types
                 val newTypes2: List<String> = newTypes.split(",")
+                //create a unique set of pokemon types
                 newTypes2.forEach { it -> newTypesSet.add(it.trim())}
 
                 saveToDB(pokemon)
             }
 
 
-            }
-        //loop through newTypes2 and create entity to be saved to db
+        }
+        //loop through newTypesSet and create entity to be saved to db
         newTypesSet.forEach { item ->
-            //create a unique set of pokemon types
             val pokemonType: PokemonDataTypeEntity = PokemonDataTypeEntity(
                 name = item
             )
-
             saveTypeToDB(pokemonType)
-
         }
 
 //        println(newTypesSet.size)
@@ -68,10 +70,7 @@ class PokemonSeedDataService(val pokemonDataRepository: PokemonDataRepository, v
         return pokemonDataTypeRepository.save(pokemonType)
     }
 
-    fun <T> convertToSet(list: List<T>): Set<T> {
-        return list.toSet()
-    }
-    }
+    } // End PokemonSeedDataService
 
 
 
@@ -86,7 +85,10 @@ class PokemonDataEntity(
     val height: Double?,
     val weight: Double?,
     val genus: String?,
-    val description: String?
+    val description: String?,
+
+    @ManyToMany
+    val types: List<PokemonDataTypeEntity>
 
 )
 
@@ -106,10 +108,7 @@ interface PokemonDataRepository : JpaRepository<PokemonDataEntity, String> {}
 @Repository
 interface PokemonDataTypeRepository : JpaRepository<PokemonDataTypeEntity, String> {}
 
-//@Service
-//class PokemonDataService(val pokemonDataRepository: PokemonDataRepository) {
-//    fun createPokemonData(pokemonData: PokemonDataEntity): PokemonDataEntity = pokemonDataRepository.save(pokemonData)
-//}
+
 
 
 

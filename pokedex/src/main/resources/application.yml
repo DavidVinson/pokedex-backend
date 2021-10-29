@@ -17,3 +17,16 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQL81Dialect
+
+#==== springdoc openapi ======#
+springdoc:
+  api-docs:
+    path: /docs
+  swagger-ui:
+    path: /swagger
+
+
+##==== springdoc openapi ======#
+#  springdoc.api-docs.path=/docs
+#  springdoc.swagger-ui.path=/swagger
+
