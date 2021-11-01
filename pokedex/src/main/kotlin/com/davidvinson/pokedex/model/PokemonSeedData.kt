@@ -1,5 +1,6 @@
 package com.davidvinson.pokedex.model
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
@@ -11,10 +12,11 @@ import javax.persistence.*
 class PokemonSeedDataService(
     val pokemonDataRepository: PokemonDataRepository,
     val pokemonDataTypeRepository: PokemonDataTypeRepository,
-    val pokemonDataAbilityRepository: PokemonDataAbilityRepository
+    val pokemonDataAbilityRepository: PokemonDataAbilityRepository,
+    val pokemonDataEggGroupEntityRepository: PokemonDataEggGroupEntityRepository
     ) {
 
-    private val filePath = "src/main/resources/rawData-copy3.csv"
+    private val filePath = "src/main/resources/rawData4.csv"
 
     fun databaseInitializer() {
 
@@ -29,6 +31,7 @@ class PokemonSeedDataService(
                 val description: String? = row["description"]
                 val types: String? = row["types"]
                 val abilities: String? = row["abilities"]
+                val eggGroups: String? = row["egg_groups"]
 
                 //Types
                 //clean types string by removing "[]" from the string
@@ -70,6 +73,27 @@ class PokemonSeedDataService(
 
                 }
 
+                //Egg Groups
+                //clean egg group string by removing "[]" from the string
+                val newEggGroups: String = eggGroups!!.drop(1).dropLast(1)
+                //clean egg groups by creating a list of egg groups ["plant", "monster"]
+                val newEggGroups2: List<String> = newEggGroups.split(",")
+                //create a unique set of pokemon egg groups
+                val newEggGroupsSet: MutableSet<String> = mutableSetOf()
+                newEggGroups2.forEach { eggGroup -> newEggGroupsSet.add(eggGroup.trim())}
+
+                //create the list of egg groups for each pokemon
+                val myPokeEggGroups: MutableList<PokemonDataEggGroupEntity> = mutableListOf()
+                newEggGroupsSet.forEach { item ->
+                    val pokemonEggGroup: PokemonDataEggGroupEntity = PokemonDataEggGroupEntity(
+                        name = item
+                    )
+                    myPokeEggGroups.add(pokemonEggGroup)
+                    saveEggGroupToDB(pokemonEggGroup)
+
+                }
+
+
                 // create pokemon
                 val pokemon: PokemonDataEntity = PokemonDataEntity(
 //                    id = id?.toInt(),
@@ -79,7 +103,8 @@ class PokemonSeedDataService(
                     genus = genus,
                     description = description,
                     types = myPokeTypes,
-                    abilities = myPokeAbilities
+                    abilities = myPokeAbilities,
+                    eggGroups = myPokeEggGroups
                 )
 
                 saveToDB(pokemon)
@@ -88,12 +113,11 @@ class PokemonSeedDataService(
 
     }
 
-    // Repo function
+    // Repo functions
     fun saveToDB(pokemon: PokemonDataEntity): PokemonDataEntity {
         return pokemonDataRepository.save(pokemon)
     }
 
-    // Repo function
     fun saveTypeToDB(pokemonType: PokemonDataTypeEntity): PokemonDataTypeEntity {
         return pokemonDataTypeRepository.save(pokemonType)
     }
@@ -101,6 +125,11 @@ class PokemonSeedDataService(
     fun saveAbilityToDB(pokemonAbility: PokemonDataAbilityEntity): PokemonDataAbilityEntity {
         return pokemonDataAbilityRepository.save(pokemonAbility)
     }
+
+    fun saveEggGroupToDB(pokemonEggGroup: PokemonDataEggGroupEntity): PokemonDataEggGroupEntity {
+        return pokemonDataEggGroupEntityRepository.save(pokemonEggGroup)
+    }
+
 
     // Function Extension
     fun PokemonDataEntity.getTypes(): MutableList<PokemonDataTypeEntity> {
@@ -115,10 +144,14 @@ class PokemonSeedDataService(
 
     fun PokemonDataEntity.setAbilities(abilities: List<PokemonDataAbilityEntity>) = abilities
 
+    fun PokemonDataEntity.getEggGroups(): MutableList<PokemonDataEggGroupEntity> {
+        return eggGroups
+    }
+    fun PokemonDataEntity.setEggGroups(eggGroups: List<PokemonDataEggGroupEntity>) = eggGroups
+
+
 
 } // End PokemonSeedDataService
-
-
 
 
 @Entity
@@ -138,6 +171,9 @@ class PokemonDataEntity(
 
     @OneToMany(cascade = [CascadeType.PERSIST])
     val abilities: MutableList<PokemonDataAbilityEntity> = mutableListOf(),
+
+    @OneToMany(cascade = [CascadeType.PERSIST])
+    val eggGroups: MutableList<PokemonDataEggGroupEntity> = mutableListOf()
 )
 
 @Entity
@@ -146,7 +182,7 @@ class PokemonDataTypeEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int? = null,
-    val name: String?,
+    val name: String?
     )
 
 @Entity
@@ -158,14 +194,14 @@ class PokemonDataAbilityEntity(
     val name: String?
 )
 
-//@Entity
-//@Table(name = "eggGroup1")
-//class PokemonEggGroupEntity(
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    val id: Int? = null,
-//    val name: String
-//)
+@Entity
+@Table(name = "pokemonDataEggGroup1")
+class PokemonDataEggGroupEntity(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Int? = null,
+    val name: String?
+)
 
 
 // Pokemon List Response Model
@@ -173,7 +209,10 @@ data class PokemonListResponseTest(
     val id: Int? = null,
     val name: String?,
     val types: List<String?>,
-    val abilities: List<String?>
+    val abilities: List<String?>,
+
+    @JsonProperty("egg_groups")
+    val eggGroups: List<String?>
 )
 
 fun PokemonDataEntity.toListResponse(): PokemonListResponseTest {
@@ -181,7 +220,8 @@ fun PokemonDataEntity.toListResponse(): PokemonListResponseTest {
         id = id,
         name = pokeName,
         types = types.map { type -> type.name },
-        abilities = abilities.map { ability -> ability.name}
+        abilities = abilities.map { ability -> ability.name},
+        eggGroups = eggGroups.map { eggGroup -> eggGroup.name}
     )
 }
 
@@ -193,6 +233,9 @@ interface PokemonDataTypeRepository : JpaRepository<PokemonDataTypeEntity, Strin
 
 @Repository
 interface PokemonDataAbilityRepository : JpaRepository<PokemonDataAbilityEntity, String> {}
+
+@Repository
+interface PokemonDataEggGroupEntityRepository : JpaRepository<PokemonDataEggGroupEntity, String> {}
 
 
 //@Repository
