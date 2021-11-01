@@ -10,10 +10,11 @@ import javax.persistence.*
 @Service
 class PokemonSeedDataService(
     val pokemonDataRepository: PokemonDataRepository,
-    val pokemonDataTypeRepository: PokemonDataTypeRepository
+    val pokemonDataTypeRepository: PokemonDataTypeRepository,
+    val pokemonDataAbilityRepository: PokemonDataAbilityRepository
     ) {
 
-    private val filePath = "src/main/resources/rawData-copy2.csv"
+    private val filePath = "src/main/resources/rawData-copy3.csv"
 
     fun databaseInitializer() {
 
@@ -27,7 +28,9 @@ class PokemonSeedDataService(
                 val genus: String? = row["genus"]
                 val description: String? = row["description"]
                 val types: String? = row["types"]
+                val abilities: String? = row["abilities"]
 
+                //Types
                 //clean types string by removing "[]" from the string
                 val newTypes: String = types!!.drop(1).dropLast(1)
                 //clean types by creating a list of types ["grass", "poison"]
@@ -47,6 +50,26 @@ class PokemonSeedDataService(
 
                 }
 
+                //Abilities
+                //clean abilities string by removing "[]" from the string
+                val newAbilities: String = abilities!!.drop(1).dropLast(1)
+                //clean types by creating a list of abilities ["chlorophyll", "overgrow"]
+                val newAbilities2: List<String> = newAbilities.split(",")
+                //create a unique set of pokemon abilities
+                val newAbilitiesSet: MutableSet<String> = mutableSetOf()
+                newAbilities2.forEach { ability -> newAbilitiesSet.add(ability.trim())}
+
+                //create the list of abilities for each pokemon
+                val myPokeAbilities: MutableList<PokemonDataAbilityEntity> = mutableListOf()
+                newAbilitiesSet.forEach { item ->
+                    val pokemonAbility: PokemonDataAbilityEntity = PokemonDataAbilityEntity(
+                        name = item
+                    )
+                    myPokeAbilities.add(pokemonAbility)
+                    saveAbilityToDB(pokemonAbility)
+
+                }
+
                 // create pokemon
                 val pokemon: PokemonDataEntity = PokemonDataEntity(
 //                    id = id?.toInt(),
@@ -55,19 +78,13 @@ class PokemonSeedDataService(
                     weight = weight?.toDouble(),
                     genus = genus,
                     description = description,
-                    types = myPokeTypes
+                    types = myPokeTypes,
+                    abilities = myPokeAbilities
                 )
 
                 saveToDB(pokemon)
             }
         }
-        //loop through newTypesSet and create entity to be saved to db
-//        newTypesSet.forEach { item ->
-//            val pokemonType: PokemonDataTypeEntity = PokemonDataTypeEntity(
-//                name = item
-//            )
-////            saveTypeToDB(pokemonType)
-//        }
 
     }
 
@@ -81,6 +98,10 @@ class PokemonSeedDataService(
         return pokemonDataTypeRepository.save(pokemonType)
     }
 
+    fun saveAbilityToDB(pokemonAbility: PokemonDataAbilityEntity): PokemonDataAbilityEntity {
+        return pokemonDataAbilityRepository.save(pokemonAbility)
+    }
+
     // Function Extension
     fun PokemonDataEntity.getTypes(): MutableList<PokemonDataTypeEntity> {
         return types
@@ -88,7 +109,14 @@ class PokemonSeedDataService(
 
     fun PokemonDataEntity.setTypes(types: List<PokemonDataTypeEntity>) = types
 
-    } // End PokemonSeedDataService
+    fun PokemonDataEntity.getAbilities(): MutableList<PokemonDataAbilityEntity> {
+        return abilities
+    }
+
+    fun PokemonDataEntity.setAbilities(abilities: List<PokemonDataAbilityEntity>) = abilities
+
+
+} // End PokemonSeedDataService
 
 
 
@@ -107,7 +135,10 @@ class PokemonDataEntity(
 
     @OneToMany(cascade = [CascadeType.PERSIST])
     val types: MutableList<PokemonDataTypeEntity> = mutableListOf(),
-    )
+
+    @OneToMany(cascade = [CascadeType.PERSIST])
+    val abilities: MutableList<PokemonDataAbilityEntity> = mutableListOf(),
+)
 
 @Entity
 @Table(name = "pokemonDataType1")
@@ -118,18 +149,39 @@ class PokemonDataTypeEntity(
     val name: String?,
     )
 
+@Entity
+@Table(name = "pokemonDataAbility1")
+class PokemonDataAbilityEntity(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Int? = null,
+    val name: String?
+)
+
+//@Entity
+//@Table(name = "eggGroup1")
+//class PokemonEggGroupEntity(
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    val id: Int? = null,
+//    val name: String
+//)
+
+
 // Pokemon List Response Model
 data class PokemonListResponseTest(
     val id: Int? = null,
     val name: String?,
-    val types: List<String?>
+    val types: List<String?>,
+    val abilities: List<String?>
 )
 
 fun PokemonDataEntity.toListResponse(): PokemonListResponseTest {
     return PokemonListResponseTest(
         id = id,
         name = pokeName,
-        types = types.map { type -> type.name }
+        types = types.map { type -> type.name },
+        abilities = abilities.map { ability -> ability.name}
     )
 }
 
@@ -138,6 +190,10 @@ interface PokemonDataRepository : JpaRepository<PokemonDataEntity, String> {}
 
 @Repository
 interface PokemonDataTypeRepository : JpaRepository<PokemonDataTypeEntity, String> {}
+
+@Repository
+interface PokemonDataAbilityRepository : JpaRepository<PokemonDataAbilityEntity, String> {}
+
 
 //@Repository
 //interface PokemonStatRepository : JpaRepository<PokemonStatEntity, String> {}
