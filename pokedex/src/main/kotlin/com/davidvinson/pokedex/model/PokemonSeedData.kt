@@ -17,7 +17,6 @@ class PokemonSeedDataService(
 
     fun databaseInitializer() {
 
-        val newTypesSet: MutableSet<String> = mutableSetOf()
 
         csvReader().open(filePath) {
             readAllWithHeaderAsSequence().forEach { row ->
@@ -31,11 +30,24 @@ class PokemonSeedDataService(
 
                 //clean types string by removing "[]" from the string
                 val newTypes: String = types!!.drop(1).dropLast(1)
-                //clean types by creating a list of types
+                //clean types by creating a list of types ["grass", "poison"]
                 val newTypes2: List<String> = newTypes.split(",")
                 //create a unique set of pokemon types
+                val newTypesSet: MutableSet<String> = mutableSetOf()
                 newTypes2.forEach { type -> newTypesSet.add(type.trim())}
 
+                //create the list of types for each pokemon
+                val myPokeTypes: MutableList<PokemonDataTypeEntity> = mutableListOf()
+                newTypesSet.forEach { item ->
+                    val pokemonType: PokemonDataTypeEntity = PokemonDataTypeEntity(
+                        name = item
+                    )
+                    myPokeTypes.add(pokemonType)
+                    saveTypeToDB(pokemonType)
+
+                }
+
+                // create pokemon
                 val pokemon: PokemonDataEntity = PokemonDataEntity(
 //                    id = id?.toInt(),
                     pokeName = name,
@@ -43,30 +55,38 @@ class PokemonSeedDataService(
                     weight = weight?.toDouble(),
                     genus = genus,
                     description = description,
+                    types = myPokeTypes
                 )
 
                 saveToDB(pokemon)
             }
         }
         //loop through newTypesSet and create entity to be saved to db
-        newTypesSet.forEach { item ->
-            val pokemonType: PokemonDataTypeEntity = PokemonDataTypeEntity(
-                name = item
-            )
-            saveTypeToDB(pokemonType)
-        }
+//        newTypesSet.forEach { item ->
+//            val pokemonType: PokemonDataTypeEntity = PokemonDataTypeEntity(
+//                name = item
+//            )
+////            saveTypeToDB(pokemonType)
+//        }
 
     }
 
+    // Repo function
     fun saveToDB(pokemon: PokemonDataEntity): PokemonDataEntity {
         return pokemonDataRepository.save(pokemon)
     }
 
+    // Repo function
     fun saveTypeToDB(pokemonType: PokemonDataTypeEntity): PokemonDataTypeEntity {
         return pokemonDataTypeRepository.save(pokemonType)
     }
 
+    // Function Extension
+    fun PokemonDataEntity.getTypes(): MutableList<PokemonDataTypeEntity> {
+        return types
+    }
 
+    fun PokemonDataEntity.setTypes(types: List<PokemonDataTypeEntity>) = types
 
     } // End PokemonSeedDataService
 
@@ -85,20 +105,9 @@ class PokemonDataEntity(
     val genus: String?,
     val description: String?,
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = [CascadeType.PERSIST])
-    @JoinTable(
-        name = "pokemonData1_pokemonDataTypes1",
-        joinColumns = [
-            JoinColumn(name = "pokemon_Data1_id")
-        ],
-        inverseJoinColumns = [
-            JoinColumn(name = "pokemon_data_types1_id")
-        ]
+    @OneToMany(cascade = [CascadeType.PERSIST])
+    val types: MutableList<PokemonDataTypeEntity> = mutableListOf(),
     )
-    val types: List<String> = listOf()
-
-
-)
 
 @Entity
 @Table(name = "pokemonDataType1")
@@ -107,13 +116,21 @@ class PokemonDataTypeEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int? = null,
     val name: String?,
+    )
 
-    @ManyToMany(mappedBy = "types", cascade = [CascadeType.PERSIST], fetch = FetchType.EAGER)
-    val pokemons: MutableList<PokemonDataEntity> = mutableListOf()
-) {
-    fun addPokemon(pokemon: PokemonDataEntity) {
-        pokemons.add(pokemon)
-    }
+// Pokemon List Response Model
+data class PokemonListResponseTest(
+    val id: Int? = null,
+    val name: String?,
+    val types: List<String?>
+)
+
+fun PokemonDataEntity.toListResponse(): PokemonListResponseTest {
+    return PokemonListResponseTest(
+        id = id,
+        name = pokeName,
+        types = types.map { type -> type.name }
+    )
 }
 
 @Repository
@@ -121,6 +138,10 @@ interface PokemonDataRepository : JpaRepository<PokemonDataEntity, String> {}
 
 @Repository
 interface PokemonDataTypeRepository : JpaRepository<PokemonDataTypeEntity, String> {}
+
+//@Repository
+//interface PokemonStatRepository : JpaRepository<PokemonStatEntity, String> {}
+
 
 /*
 @Entity
@@ -185,4 +206,16 @@ class Movie {
         superHero.getMovies().add(this)
     }
 }
+
+
+//    @JoinTable(
+//        name = "pokemonData1_pokemonDataTypes1",
+//        joinColumns = [
+//            JoinColumn(name = "pokemon_Data1_id")
+//        ],
+//        inverseJoinColumns = [
+//            JoinColumn(name = "pokemon_data_types1_id")
+//        ]
+//    )
+
 */

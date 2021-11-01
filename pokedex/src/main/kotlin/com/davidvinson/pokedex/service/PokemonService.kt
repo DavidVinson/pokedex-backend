@@ -1,5 +1,7 @@
 package com.davidvinson.pokedex.service
 
+import com.davidvinson.pokedex.model.PokemonDataEntity
+import com.davidvinson.pokedex.model.PokemonDataRepository
 import com.davidvinson.pokedex.model.PokemonEntity
 import com.davidvinson.pokedex.repository.PokemonRepository
 import org.springframework.http.HttpStatus
@@ -12,6 +14,11 @@ class PokemonService(val pokemonRepository: PokemonRepository) {
 
     fun getPokemonById(pokemonId: Int): PokemonEntity = pokemonRepository.findById(pokemonId)
         .orElseThrow { PokemonNotFoundException(HttpStatus.NOT_FOUND, "No matching pokemon was found")}
+}
+
+@Service
+class PokemonDataServiceTest(val pokemonDataRepository: PokemonDataRepository) {
+    fun listAllPokemon(): List<PokemonDataEntity> = pokemonDataRepository.findAll()
 }
 
 

@@ -1,6 +1,7 @@
 package com.davidvinson.pokedex.controller
 
 import com.davidvinson.pokedex.model.*
+import com.davidvinson.pokedex.service.PokemonDataServiceTest
 import com.davidvinson.pokedex.service.PokemonService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -8,7 +9,11 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class PokemonController(val pokemonService: PokemonService, val pokemonSeedDataService: PokemonSeedDataService) {
+class PokemonController(
+    val pokemonService: PokemonService,
+    val pokemonSeedDataService: PokemonSeedDataService,
+    val pokemonDataServiceTest: PokemonDataServiceTest
+) {
 
     @GetMapping("/api/pokemon")
     fun getAllPokemon(): ResponseEntity<List<PokemonListResponse>> {
@@ -24,6 +29,11 @@ class PokemonController(val pokemonService: PokemonService, val pokemonSeedDataS
     fun seedDatabase() {
         pokemonSeedDataService.databaseInitializer()
         println("successful save")
+    }
+
+    @GetMapping("/api/pokemon/ListTest")
+    fun getAllPokemonListTest(): List<PokemonListResponseTest> {
+        return pokemonDataServiceTest.listAllPokemon().map {pokemon -> pokemon.toListResponse()}
     }
 
 }
