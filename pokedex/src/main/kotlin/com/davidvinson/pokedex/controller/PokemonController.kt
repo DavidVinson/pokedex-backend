@@ -25,10 +25,16 @@ class PokemonController(
         return ResponseEntity.ok(pokemonService.getPokemonById(pokemonId).toResponse())
     }
 
+    // TEST ENDPOINTS
     @GetMapping("/api/pokemon/test")
     fun seedDatabase() {
         pokemonSeedDataService.databaseInitializer()
         println("successful save")
+    }
+
+    @GetMapping("/api/pokemon/test/{id}")
+    fun getPokemonByIdTest(@PathVariable("id") pokemonId: Int): PokemonResponseTest {
+        return pokemonDataServiceTest.getPokemonByIdTest(pokemonId).toResponseTest()
     }
 
     @GetMapping("/api/pokemon/ListTest")

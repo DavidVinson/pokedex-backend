@@ -13,29 +13,30 @@ class PokemonSeedDataService(
     val pokemonDataRepository: PokemonDataRepository,
     val pokemonDataTypeRepository: PokemonDataTypeRepository,
     val pokemonDataAbilityRepository: PokemonDataAbilityRepository,
-    val pokemonDataEggGroupEntityRepository: PokemonDataEggGroupEntityRepository
+    val pokemonDataEggGroupEntityRepository: PokemonDataEggGroupRepository,
+    val pokemonDataStatRepository: PokemonDataStatRepository
     ) {
 
-    private val filePath = "src/main/resources/rawData4.csv"
+    private val filePath = "src/main/resources/rawData5-copy.csv"
 
     fun databaseInitializer() {
 
-
         csvReader().open(filePath) {
             readAllWithHeaderAsSequence().forEach { row ->
-                val id: String? = row["id"] // row.get("id")
-                val name: String? = row["name"]
-                val height: String? = row["height"]
-                val weight: String? = row["weight"]
-                val genus: String? = row["genus"]
-                val description: String? = row["description"]
-                val types: String? = row["types"]
-                val abilities: String? = row["abilities"]
-                val eggGroups: String? = row["egg_groups"]
+                val id: String = row["id"].toString() // row.get("id")
+                val name: String = row["name"].toString()
+                val height: String = row["height"].toString()
+                val weight: String = row["weight"].toString()
+                val genus: String = row["genus"].toString()
+                val description: String = row["description"].toString()
+                val types: String = row["types"].toString()
+                val abilities: String = row["abilities"].toString()
+                val eggGroups: String = row["egg_groups"].toString()
+                val stats: String = row["stats"].toString()
 
                 //Types
                 //clean types string by removing "[]" from the string
-                val newTypes: String = types!!.drop(1).dropLast(1)
+                val newTypes: String = types.drop(1).dropLast(1)
                 //clean types by creating a list of types ["grass", "poison"]
                 val newTypes2: List<String> = newTypes.split(",")
                 //create a unique set of pokemon types
@@ -55,7 +56,7 @@ class PokemonSeedDataService(
 
                 //Abilities
                 //clean abilities string by removing "[]" from the string
-                val newAbilities: String = abilities!!.drop(1).dropLast(1)
+                val newAbilities: String = abilities.drop(1).dropLast(1)
                 //clean types by creating a list of abilities ["chlorophyll", "overgrow"]
                 val newAbilities2: List<String> = newAbilities.split(",")
                 //create a unique set of pokemon abilities
@@ -75,7 +76,7 @@ class PokemonSeedDataService(
 
                 //Egg Groups
                 //clean egg group string by removing "[]" from the string
-                val newEggGroups: String = eggGroups!!.drop(1).dropLast(1)
+                val newEggGroups: String = eggGroups.drop(1).dropLast(1)
                 //clean egg groups by creating a list of egg groups ["plant", "monster"]
                 val newEggGroups2: List<String> = newEggGroups.split(",")
                 //create a unique set of pokemon egg groups
@@ -93,18 +94,34 @@ class PokemonSeedDataService(
 
                 }
 
+                //Stats
+                //clean stats string by removing "{}" from the string
+                val newStats: String = stats!!.drop(1).dropLast(1)
+                val newStats2: List<String> = newStats.split(",")
+
+                val myPokeStats: PokemonDataStatEntity = PokemonDataStatEntity(
+                    hp = newStats2[0].split(": ")[1].toInt(),
+                    speed = newStats2[1].split(": ")[1].toInt(),
+                    attack = newStats2[2].split(": ")[1].toInt(),
+                    defence = newStats2[3].split(": ")[1].toInt(),
+                    specialAttack = newStats2[4].split(": ")[1].toInt(),
+                    specialDefence = newStats2[5].split(": ")[1].toInt()
+                )
+
+                saveStatToDB(myPokeStats)
 
                 // create pokemon
                 val pokemon: PokemonDataEntity = PokemonDataEntity(
 //                    id = id?.toInt(),
                     pokeName = name,
-                    height = height?.toDouble(),
-                    weight = weight?.toDouble(),
+                    height = height.toDouble(),
+                    weight = weight.toDouble(),
                     genus = genus,
                     description = description,
                     types = myPokeTypes,
                     abilities = myPokeAbilities,
-                    eggGroups = myPokeEggGroups
+                    eggGroups = myPokeEggGroups,
+                    stats = myPokeStats
                 )
 
                 saveToDB(pokemon)
@@ -130,25 +147,29 @@ class PokemonSeedDataService(
         return pokemonDataEggGroupEntityRepository.save(pokemonEggGroup)
     }
 
-
-    // Function Extension
-    fun PokemonDataEntity.getTypes(): MutableList<PokemonDataTypeEntity> {
-        return types
+    fun saveStatToDB(pokemonStat: PokemonDataStatEntity): PokemonDataStatEntity {
+        return pokemonDataStatRepository.save(pokemonStat)
     }
 
-    fun PokemonDataEntity.setTypes(types: List<PokemonDataTypeEntity>) = types
 
-    fun PokemonDataEntity.getAbilities(): MutableList<PokemonDataAbilityEntity> {
-        return abilities
-    }
 
-    fun PokemonDataEntity.setAbilities(abilities: List<PokemonDataAbilityEntity>) = abilities
-
-    fun PokemonDataEntity.getEggGroups(): MutableList<PokemonDataEggGroupEntity> {
-        return eggGroups
-    }
-    fun PokemonDataEntity.setEggGroups(eggGroups: List<PokemonDataEggGroupEntity>) = eggGroups
-
+//    fun PokemonDataEntity.getTypes(): MutableList<PokemonDataTypeEntity> {
+//        return types
+//    }
+//
+//    fun PokemonDataEntity.setTypes(types: List<PokemonDataTypeEntity>) = types
+//
+//    fun PokemonDataEntity.getAbilities(): MutableList<PokemonDataAbilityEntity> {
+//        return abilities
+//    }
+//
+//    fun PokemonDataEntity.setAbilities(abilities: List<PokemonDataAbilityEntity>) = abilities
+//
+//    fun PokemonDataEntity.getEggGroups(): MutableList<PokemonDataEggGroupEntity> {
+//        return eggGroups
+//    }
+//    fun PokemonDataEntity.setEggGroups(eggGroups: List<PokemonDataEggGroupEntity>) = eggGroups
+//
 
 
 } // End PokemonSeedDataService
@@ -160,11 +181,11 @@ class PokemonDataEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int? = null,
-    val pokeName: String?,
-    val height: Double?,
-    val weight: Double?,
-    val genus: String?,
-    val description: String?,
+    val pokeName: String,
+    val height: Double,
+    val weight: Double,
+    val genus: String,
+    val description: String,
 
     @OneToMany(cascade = [CascadeType.PERSIST])
     val types: MutableList<PokemonDataTypeEntity> = mutableListOf(),
@@ -173,7 +194,10 @@ class PokemonDataEntity(
     val abilities: MutableList<PokemonDataAbilityEntity> = mutableListOf(),
 
     @OneToMany(cascade = [CascadeType.PERSIST])
-    val eggGroups: MutableList<PokemonDataEggGroupEntity> = mutableListOf()
+    val eggGroups: MutableList<PokemonDataEggGroupEntity> = mutableListOf(),
+
+    @OneToOne
+    val stats: PokemonDataStatEntity
 )
 
 @Entity
@@ -182,7 +206,7 @@ class PokemonDataTypeEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int? = null,
-    val name: String?
+    val name: String
     )
 
 @Entity
@@ -191,7 +215,7 @@ class PokemonDataAbilityEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int? = null,
-    val name: String?
+    val name: String
 )
 
 @Entity
@@ -200,46 +224,112 @@ class PokemonDataEggGroupEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Int? = null,
-    val name: String?
+    val name: String
+)
+
+@Entity
+@Table(name = "statData1")
+class PokemonDataStatEntity(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Int? = null,
+    val hp: Int,
+    val attack: Int,
+    val defence: Int,
+    val speed: Int,
+    val specialAttack: Int,
+    val specialDefence: Int
+)
+
+// Stat Model
+data class StatTest(
+    val hp: Int,
+    val attack: Int,
+    val defence: Int,
+    val speed: Int,
+
+    @JsonProperty("special_attack")
+    val specialAttack: Int,
+
+    @JsonProperty("special_defence")
+    val specialDefence: Int
 )
 
 
 // Pokemon List Response Model
 data class PokemonListResponseTest(
     val id: Int? = null,
-    val name: String?,
-    val types: List<String?>,
-    val abilities: List<String?>,
+    val name: String,
+    val types: List<String>
+)
+
+// Pokemon Response Model
+data class PokemonResponseTest(
+    val id: Int? = null,
+    val name: String,
+    val types: List<String>,
+    val height: Double,
+    val weight: Double,
+    val abilities: List<String>,
 
     @JsonProperty("egg_groups")
-    val eggGroups: List<String?>
+    val eggGroups: List<String>,
+    val stats: StatTest,
+    val genus: String,
+    val description: String
 )
+
+// PokemonEntity to Response Model
+fun PokemonDataEntity.toResponseTest(): PokemonResponseTest {
+    return PokemonResponseTest(
+        id = id,
+        name = pokeName,
+        types = types.map { type -> type.name },
+        height = height,
+        weight = weight,
+        abilities = abilities.map { ability -> ability.name},
+        eggGroups = eggGroups.map { eggGroup -> eggGroup.name },
+        stats = stats.toModelTest(),
+        genus = genus,
+        description = description
+
+    )
+}
 
 fun PokemonDataEntity.toListResponse(): PokemonListResponseTest {
     return PokemonListResponseTest(
         id = id,
         name = pokeName,
         types = types.map { type -> type.name },
-        abilities = abilities.map { ability -> ability.name},
-        eggGroups = eggGroups.map { eggGroup -> eggGroup.name}
+    )
+}
+
+// StatEntity to Stat Model
+fun PokemonDataStatEntity.toModelTest(): StatTest {
+    return StatTest(
+        hp = hp,
+        attack = attack,
+        defence = defence,
+        speed = speed,
+        specialAttack = specialAttack,
+        specialDefence = specialDefence
     )
 }
 
 @Repository
-interface PokemonDataRepository : JpaRepository<PokemonDataEntity, String> {}
+interface PokemonDataRepository : JpaRepository<PokemonDataEntity, Int> {}
 
 @Repository
-interface PokemonDataTypeRepository : JpaRepository<PokemonDataTypeEntity, String> {}
+interface PokemonDataTypeRepository : JpaRepository<PokemonDataTypeEntity, Int> {}
 
 @Repository
-interface PokemonDataAbilityRepository : JpaRepository<PokemonDataAbilityEntity, String> {}
+interface PokemonDataAbilityRepository : JpaRepository<PokemonDataAbilityEntity, Int> {}
 
 @Repository
-interface PokemonDataEggGroupEntityRepository : JpaRepository<PokemonDataEggGroupEntity, String> {}
+interface PokemonDataEggGroupRepository : JpaRepository<PokemonDataEggGroupEntity, Int> {}
 
-
-//@Repository
-//interface PokemonStatRepository : JpaRepository<PokemonStatEntity, String> {}
+@Repository
+interface PokemonDataStatRepository : JpaRepository<PokemonDataStatEntity, Int> {}
 
 
 /*
