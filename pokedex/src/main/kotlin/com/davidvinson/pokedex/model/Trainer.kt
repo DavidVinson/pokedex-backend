@@ -10,14 +10,13 @@ class TrainerEntity(
     val id: Int,
     val username: String,
     val password: String
-)
+    )
 
 // Trainer Response Model
 data class TrainerResponse(
     val id: Int,
     val username: String
     )
-
 
 // TrainerEntity to Response Model
 fun TrainerEntity.toResponse(): TrainerResponse {
@@ -26,4 +25,3 @@ fun TrainerEntity.toResponse(): TrainerResponse {
         username = username
     )
 }
-

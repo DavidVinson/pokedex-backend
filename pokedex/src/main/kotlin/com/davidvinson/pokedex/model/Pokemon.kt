@@ -8,74 +8,73 @@ import javax.persistence.*
 class PokemonEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Int,
+    val id: Int? = null,
     val name: String,
-    val image: String,
+    val image: String? = null,
     val height: Double,
     val weight: Double,
     val genus: String,
     val description: String,
 
-    @ManyToMany
-    val types: List<TypeEntity>,
+    @OneToMany(cascade = [CascadeType.PERSIST])
+    val types: MutableList<TypeEntity> = mutableListOf(),
 
-    @ManyToMany
-    val abilities: List<AbilityEntity>,
+    @OneToMany(cascade = [CascadeType.PERSIST])
+    val abilities: MutableList<AbilityEntity> = mutableListOf(),
 
-    @ManyToMany
-    val eggGroups: List<EggGroupEntity>,
+    @OneToMany(cascade = [CascadeType.PERSIST])
+    val eggGroups: MutableList<EggGroupEntity> = mutableListOf(),
 
     @OneToOne
     val stats: StatEntity
-
-)
+    )
 
 @Entity
 @Table(name = "type")
 class TypeEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Int,
+    val id: Int? = null,
     val name: String
-)
+    )
 
 @Entity
 @Table(name = "ability")
 class AbilityEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Int,
+    val id: Int? = null,
     val name: String
-)
+    )
 
 @Entity
 @Table(name = "eggGroup")
 class EggGroupEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Int,
+    val id: Int? = null,
     val name: String
-)
+    )
 
 @Entity
 @Table(name = "stat")
 class StatEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Int,
+    val id: Int? = null,
     val hp: Int,
     val attack: Int,
     val defence: Int,
     val speed: Int,
     val specialAttack: Int,
     val specialDefence: Int
-)
-
+    )
 
 // Pokemon Response Model
 data class PokemonResponse(
     val id: Int? = null,
     val name: String,
+    val image: String? = null,
     val types: List<String>,
     val height: Double,
     val weight: Double,
@@ -92,9 +91,9 @@ data class PokemonResponse(
 data class PokemonListResponse(
     val id: Int? = null,
     val name: String,
+    val image: String? = null,
     val types: List<String>
 )
-
 
 // Stat Model
 data class Stat(
@@ -108,13 +107,14 @@ data class Stat(
 
     @JsonProperty("special_defence")
     val specialDefence: Int
-)
+    )
 
 // PokemonEntity to Response Model
 fun PokemonEntity.toResponse(): PokemonResponse {
     return PokemonResponse(
         id = id,
         name = name,
+        image = image,
         types = types.map { type -> type.name },
         height = height,
         weight = weight,
@@ -123,7 +123,6 @@ fun PokemonEntity.toResponse(): PokemonResponse {
         stats = stats.toModel(),
         genus = genus,
         description = description
-
     )
 }
 
@@ -132,6 +131,7 @@ fun PokemonEntity.toListResponse(): PokemonListResponse {
     return PokemonListResponse(
         id = id,
         name = name,
+        image = image,
         types = types.map { type -> type.name },
     )
 }
@@ -147,8 +147,3 @@ fun StatEntity.toModel(): Stat {
         specialDefence = specialDefence
     )
 }
-
-
-
-
-
