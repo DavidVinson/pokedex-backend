@@ -13,7 +13,7 @@ class PokemonSeedDataService(
     val dataStatRepository: StatRepository
     ) {
 
-    private val filePath = "src/main/resources/rawData5-copy.csv"
+    val filePath = "src/main/resources/rawData5-copy.csv"
 
     fun databaseInitializer() {
 
